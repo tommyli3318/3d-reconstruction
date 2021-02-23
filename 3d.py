@@ -88,11 +88,11 @@ for image in image_list:
     voxel_array = convert3DPointersArrayToVoxelArray(point_array)
     print(voxel_array)
 
+
     # renderer = DVRenderer(500,500)
     # renderer.add_voxels(voxel_array)
     # renderer.render()
     # renderer.show_window()
-
 
 
 # Step 1: Depth determination, calculate the 3D depth from any given image
