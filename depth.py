@@ -35,15 +35,12 @@ class Image:
     def generateIntensityVal(self, rgb) -> float:
         # Get intensity from arr of RGB values
 
-        # 0.2126*R + 0.7152*G + 0.0722*B) => standard for certain colour spaces
-        # 0.299*R + 0.587*G + 0.114*B = > perceived option 2, slower to calculate
-        # sqrt( 0.299*R^2 + 0.587*G^2 + 0.114*B^2 ) => perceived option 2, slower to calculate
-        # return (0.2126 * rgb_arr[0] + 0.7152 * rgb_arr[1] + 0.7152 * rgb_arr[2])
+        # return (0.2126 * R + 0.7152 * G + 0.7152 * B) # standard for certain colour spaces
 
-        # L = R * 299/1000 + G * 587/1000 + B * 114/1000 <- black and white
         R, G, B = rgb
         return R * 299/1000 + G * 587/1000 + B * 114/1000
-    
+        
+        # return (0.299*R ** 2 + 0.587*G ** 2 + 0.114*B ** 2) ** 0.5
 
     def generateXyzFromIntensity(self) -> np.array:
         xyz = []
@@ -54,6 +51,13 @@ class Image:
             xyz.append(temp)
         return np.asarray(xyz)
     
+    def normalize(self, arr, a, b) -> None:
+        # normalizes arr to be in range of (a, b)
+        A = min(arr) # old min
+        B = max(arr) # old max
+        
+        for i in range(len(arr)):
+            arr[i] = round(a + (arr[i]-A)*(b-a) / (B-A), 2)
 
     def plotXyz(self) -> None:
         fig = plt.figure()
@@ -70,7 +74,13 @@ class Image:
                 Y.append(y)
                 Z.append(z)
 
+        self.normalize(Z, 0, 10)
+
         ax.plot(X,Y,Z)
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
+        ax.set_zlim3d(-10,20)
         plt.show()
 
     
