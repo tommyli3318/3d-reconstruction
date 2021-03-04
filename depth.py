@@ -35,12 +35,12 @@ class Image:
     def generateIntensityVal(self, rgb) -> float:
         # Get intensity from arr of RGB values
 
-        # return (0.2126 * R + 0.7152 * G + 0.7152 * B) # standard for certain colour spaces
-
         R, G, B = rgb
-        return R * 299/1000 + G * 587/1000 + B * 114/1000
-        
+        # return (0.2126 * R + 0.7152 * G + 0.7152 * B) # standard for certain colour spaces
         # return (0.299*R ** 2 + 0.587*G ** 2 + 0.114*B ** 2) ** 0.5
+        return R * 299/1000 + G * 587/1000 + B * 114/1000 # grayscale intensity value of pixel
+        
+        
 
     def generateXyzFromIntensity(self) -> np.array:
         xyz = []
@@ -109,4 +109,5 @@ def main():
 
 
 
-main()
+if __name__ == "__main__":
+    main()

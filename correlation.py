@@ -18,7 +18,9 @@ matches = flann.knnMatch(des1,des2,k=2)
 matchesMask = [[0,0] for i in range(len(matches))]
 # ratio test as per Lowe's paper
 for i,(m,n) in enumerate(matches):
-    if m.distance < 0.9 * n.distance:
+    if 0.9 * n.distance < m.distance < 1.1 * n.distance \
+    or 0.9 * m.distance < n.distance < 1.1 * m.distance:
+    # if m.distance < 0.9 * n.distance:
         matchesMask[i]=[1,0]
         
 draw_params = dict(matchColor = (0,255,0),
