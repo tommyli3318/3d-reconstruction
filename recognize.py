@@ -9,7 +9,7 @@ detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
 # read the image
-img = cv2.imread("tommy/left2.jpg")
+img = cv2.imread("images/girl.jpg")
 
 # resize the image
 # img = cv2.resize(img, (2448//4,3264//4)) # original is (2448 x 3264)
