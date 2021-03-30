@@ -76,7 +76,7 @@ class Image:
 
         self.normalize(Z, 0, 10)
 
-        ax.plot(X,Y,Z)
+        ax.scatter(X,Y,Z)
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.set_zlabel("Z")
