@@ -15,8 +15,8 @@ def getDepth(BGR):
 
 def getRadiusDepthAverage(img, x : int ,y : int , r : int) -> float:
 
-    total_grey = 0
-    pixels_total = 0
+    total_depth = 0
+    num_pixels = 0
 
     a = np.array((x,y))
     
@@ -31,10 +31,10 @@ def getRadiusDepthAverage(img, x : int ,y : int , r : int) -> float:
             if(abs(np.linalg.norm(a-b)) > r):
                 continue
             
-            total_grey += getDepth(img[x,y])
-            pixels_total += 1
+            total_depth += getDepth(img[x,y])
+            num_pixels += 1
     
-    return total_grey / pixels_total
+    return total_depth / num_pixels
 
 # Load the detector
 detector = dlib.get_frontal_face_detector()
@@ -63,26 +63,29 @@ for face in faces:
     # Create landmark object
     landmarks = predictor(image=gray, box=face)
 
-    z_avg = {range(0,17) : 0.0,
-             range(17, 22) : 0.0,
-             range(22, 27) : 0.0,
-             range(27, 31) : 0.0,
-             range(31, 36) : 0.0,
-             range(36, 42) : 0.0,
-             range(42, 48) : 0.0,
-             range(48, 68) : 0.0}
+    # this dictionary maps each region to its depth estimate
+    region_depths = {
+        range( 0, 17) : 0.0, # jawline
+        range(17, 22) : 0.0, # left eyebrow
+        range(22, 27) : 0.0, # right eyebrow
+        range(27, 31) : 0.0, # nose line
+        range(31, 36) : 0.0, # nose
+        range(36, 42) : 0.0, # left eye
+        range(42, 48) : 0.0, # right eye
+        range(48, 68) : 0.0  # mouth
+    }
 
     # Loop through all the points
     for n in range(0, 68):
         x = landmarks.part(n).x
         y = landmarks.part(n).y
-        range_z = getRadiusDepthAverage(img, x, y, 1)
-        # range_z = getDepth(img[x,y])
-        for k in z_avg.keys():
-            if(n in k):
-                z_avg[k] += range_z
+        radius_z = getRadiusDepthAverage(img, x, y, 1)
+        # radius_z = getDepth(img[x,y])
+        for region in region_depths.keys():
+            if (n in region): # if current point belongs to this region
+                region_depths[region] += radius_z # add it to the total
         
-        point_cloud.append( [x,y,range_z] )
+        point_cloud.append( [x,y,-1] ) # -1 is placeholder
 
         # Draw a circle
         cv2.circle(img=img, center=(x, y), radius=3, color=(0, 255, 0), thickness=-1)
@@ -90,9 +93,14 @@ for face in faces:
         # put text
         cv2.putText(img=img, text=str(n), org=(x,y), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(0,0,255))
     
-    for k in z_avg.keys():
-        for i in k:
-            point_cloud[i][2] = z_avg[k] / len(k)
+    # divide each total by number of points
+    for region in region_depths.keys():
+        region_depths[region] = region_depths[region] / len(region)
+        
+    # set the depth for each point in point_cloud
+    for region in region_depths.keys():
+        for i in region:
+            point_cloud[i][2] = region_depths[region]
 
 # show the image
 # cv2.imshow(winname="Face", mat=img)
@@ -104,8 +112,8 @@ cv2.waitKey(delay=0)
 cv2.destroyAllWindows()
 
 point_cloud = np.array(point_cloud)
-print(point_cloud)
-print(point_cloud.shape)
+# print(point_cloud)
+# print(point_cloud.shape)
 
 
 def plotXyz(point_cloud) -> None:
