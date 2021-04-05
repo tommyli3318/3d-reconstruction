@@ -13,6 +13,29 @@ def getDepth(BGR):
     B, G, R = BGR
     return round(R * 299/1000 + G * 587/1000 + B * 114/1000, 2) # grayscale intensity value of pixel
 
+def getRadiusDepthAverage(img, x : int ,y : int , r : int) -> float:
+
+    total_grey = 0
+    pixels_total = 0
+
+    a = np.array((x,y))
+    
+    for i in range(x - r, x + r):
+        for j in range(y - r, y + r):
+            
+            if(i < 0 or i >= img.shape[1] or j < 0 or j >= img.shape[0]):
+                continue
+            
+            b = np.array((i,j))
+
+            if(abs(np.linalg.norm(a-b)) > r):
+                continue
+            
+            total_grey += getDepth(img[x,y])
+            pixels_total += 1
+    
+    return total_grey / pixels_total
+
 # Load the detector
 detector = dlib.get_frontal_face_detector()
 
@@ -27,6 +50,7 @@ img = cv2.imread("images/girl.jpg") # images/girl.jpg
 
 # Convert image into grayscale
 gray = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2GRAY)
+    
 
 # Use detector to find landmarks
 faces = detector(gray)
@@ -39,18 +63,36 @@ for face in faces:
     # Create landmark object
     landmarks = predictor(image=gray, box=face)
 
+    z_avg = {range(0,17) : 0.0,
+             range(17, 22) : 0.0,
+             range(22, 27) : 0.0,
+             range(27, 31) : 0.0,
+             range(31, 36) : 0.0,
+             range(36, 42) : 0.0,
+             range(42, 48) : 0.0,
+             range(48, 68) : 0.0}
+
     # Loop through all the points
     for n in range(0, 68):
         x = landmarks.part(n).x
-        y = landmarks.part(n).y 
+        y = landmarks.part(n).y
+        range_z = getRadiusDepthAverage(img, x, y, 1)
+        # range_z = getDepth(img[x,y])
+        for k in z_avg.keys():
+            if(n in k):
+                z_avg[k] += range_z
         
-        point_cloud.append( (x,y,getDepth(img[x,y])) )
+        point_cloud.append( [x,y,range_z] )
 
         # Draw a circle
         cv2.circle(img=img, center=(x, y), radius=3, color=(0, 255, 0), thickness=-1)
         
         # put text
         cv2.putText(img=img, text=str(n), org=(x,y), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(0,0,255))
+    
+    for k in z_avg.keys():
+        for i in k:
+            point_cloud[i][2] = z_avg[k] / len(k)
 
 # show the image
 # cv2.imshow(winname="Face", mat=img)
