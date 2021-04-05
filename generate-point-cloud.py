@@ -23,7 +23,7 @@ def getRadiusDepthAverage(img, x : int ,y : int , r : int) -> float:
     for i in range(x - r, x + r):
         for j in range(y - r, y + r):
             
-            if(i < 0 or i >= img.shape[1] or j < 0 or j >= img.shape[0]):
+            if(i < 0 or i >= img.shape[0] or j < 0 or j >= img.shape[1]):
                 continue
             
             b = np.array((i,j))
@@ -31,7 +31,7 @@ def getRadiusDepthAverage(img, x : int ,y : int , r : int) -> float:
             if(abs(np.linalg.norm(a-b)) > r):
                 continue
             
-            total_depth += getDepth(img[x,y])
+            total_depth += getDepth(img[i,j])
             num_pixels += 1
     
     return total_depth / num_pixels
@@ -79,7 +79,7 @@ for face in faces:
     for n in range(0, 68):
         x = landmarks.part(n).x
         y = landmarks.part(n).y
-        radius_z = getRadiusDepthAverage(img, x, y, 1)
+        radius_z = getRadiusDepthAverage(img, x, y, 10)
         # radius_z = getDepth(img[x,y])
         for region in region_depths.keys():
             if (n in region): # if current point belongs to this region
