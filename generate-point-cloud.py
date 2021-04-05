@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import dlib
+import statistics
 
 # Point cloud
 point_cloud = [] # Array of (x,y,z) tuples
@@ -34,7 +35,7 @@ def getRadiusDepthAverage(img, x : int ,y : int , r : int) -> float:
             total_depth += getDepth(img[i,j])
             num_pixels += 1
     
-    return total_depth / num_pixels
+    return round(total_depth / num_pixels, 2)
 
 # Load the detector
 detector = dlib.get_frontal_face_detector()
@@ -65,14 +66,14 @@ for face in faces:
 
     # this dictionary maps each region to its depth estimate
     region_depths = {
-        range( 0, 17) : 0.0, # jawline
-        range(17, 22) : 0.0, # left eyebrow
-        range(22, 27) : 0.0, # right eyebrow
-        range(27, 31) : 0.0, # nose line
-        range(31, 36) : 0.0, # nose
-        range(36, 42) : 0.0, # left eye
-        range(42, 48) : 0.0, # right eye
-        range(48, 68) : 0.0  # mouth
+        range( 0, 17) : [], # jawline
+        range(17, 22) : [], # left eyebrow
+        range(22, 27) : [], # right eyebrow
+        range(27, 31) : [], # nose line
+        range(31, 36) : [], # nose
+        range(36, 42) : [], # left eye
+        range(42, 48) : [], # right eye
+        range(48, 68) : []  # mouth
     }
 
     # Loop through all the points
@@ -83,7 +84,7 @@ for face in faces:
         # radius_z = getDepth(img[x,y])
         for region in region_depths.keys():
             if (n in region): # if current point belongs to this region
-                region_depths[region] += radius_z # add it to the total
+                region_depths[region].append(radius_z) # add it to the arr
         
         point_cloud.append( [x,y,-1] ) # -1 is placeholder
 
@@ -93,14 +94,24 @@ for face in faces:
         # put text
         cv2.putText(img=img, text=str(n), org=(x,y), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(0,0,255))
     
-    # divide each total by number of points
-    for region in region_depths.keys():
-        region_depths[region] = region_depths[region] / len(region)
-        
+    # debug
+    for region, arr in region_depths.items(): 
+        # each value in the arr denotes the average depth of one circular area around one landmark point
+        arr.sort()
+        print(region, "->", arr)
+        print("mean = %s, median = %s, stdev = %s" % (
+                round(statistics.mean(arr),2),
+                round(statistics.median(arr),2),
+                round(statistics.stdev(arr),2)
+            )
+        )
+        print()
+
     # set the depth for each point in point_cloud
     for region in region_depths.keys():
+        depth_of_entire_region = statistics.mean(region_depths[region])
         for i in region:
-            point_cloud[i][2] = region_depths[region]
+            point_cloud[i][2] = depth_of_entire_region
 
 # show the image
 # cv2.imshow(winname="Face", mat=img)
@@ -135,6 +146,7 @@ def plotXyz(point_cloud) -> None:
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
     ax.set_zlabel("Z")
+    ax.invert_yaxis()
     # ax.set_zlim3d(-10,20)
     plt.show()
 
