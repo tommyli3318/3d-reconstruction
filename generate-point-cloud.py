@@ -14,28 +14,22 @@ def getDepth(BGR):
     B, G, R = BGR
     return round(R * 299/1000 + G * 587/1000 + B * 114/1000, 2) # grayscale intensity value of pixel
 
-def getRadiusDepthAverage(img, x : int ,y : int , r : int) -> float:
+def getRadiusDepthAverage(img, x : int , y : int , r : int) -> float:
+    depth_arr = []
 
-    total_depth = 0
-    num_pixels = 0
-
-    a = np.array((x,y))
-    
+    original_point = np.array((x,y))
     for i in range(x - r, x + r):
         for j in range(y - r, y + r):
-            
             if(i < 0 or i >= img.shape[0] or j < 0 or j >= img.shape[1]):
                 continue
             
-            b = np.array((i,j))
-
-            if(abs(np.linalg.norm(a-b)) > r):
+            new_point = np.array((i,j))
+            if(abs(np.linalg.norm(original_point-new_point)) > r):
                 continue
             
-            total_depth += getDepth(img[i,j])
-            num_pixels += 1
-    
-    return round(total_depth / num_pixels, 2)
+            depth_arr.append(getDepth(img[i,j]))
+
+    return round(statistics.median(depth_arr), 2) # replaceable with statistics.mean()
 
 # Load the detector
 detector = dlib.get_frontal_face_detector()
@@ -109,7 +103,7 @@ for face in faces:
 
     # set the depth for each point in point_cloud
     for region in region_depths.keys():
-        depth_of_entire_region = statistics.mean(region_depths[region])
+        depth_of_entire_region = round(statistics.median(region_depths[region]), 2) # replaceable with statistics.mean()
         for i in region:
             point_cloud[i][2] = depth_of_entire_region
 
