@@ -16,6 +16,8 @@ def recognize_image(image_path, show_image=False):
 
     # Use detector to find landmarks
     faces = detector(gray)
+    
+    assert len(faces) != 0, "Error: no face detected in input image %s" % image_path
     assert len(faces) == 1, "Error: detected more than 1 face in input image %s" % image_path
     
     face = faces[0]
