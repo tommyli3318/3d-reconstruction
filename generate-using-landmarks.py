@@ -35,8 +35,8 @@ def apply(src, src_landmarks, des, des_landmarks, landmarks_to_apply, r):
                     continue
                 if abs(np.linalg.norm([i,j])) > r:
                     continue
-            
-            des[c,d] = src[a,b]
+                
+                des[c,d] = src[a,b]
 
 
 def main(front_path, left_path, right_path):
