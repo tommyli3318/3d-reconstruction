@@ -5,8 +5,8 @@ import dlib
 # Load the detector
 detector = dlib.get_frontal_face_detector()
 
-# Load the predictor
-predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+# Load the predictor from https://github.com/codeniko/shape_predictor_81_face_landmarks
+predictor = dlib.shape_predictor("shape_predictor_81_face_landmarks.dat")
 
 def recognize_image(image_path, show_image=False):
     # read the image and convert image into grayscale
@@ -30,7 +30,7 @@ def recognize_image(image_path, show_image=False):
     landmarks = predictor(image=gray, box=face)
 
     # Loop through all the points
-    for n in range(0, 68):
+    for n in range(0, 81):
         x = landmarks.part(n).x
         y = landmarks.part(n).y
         res.append( (x,y) )
