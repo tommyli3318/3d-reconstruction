@@ -68,6 +68,7 @@ def main(front_path, left_path, right_path):
     # visualization using matplotlib
     p2v.vis_depth_matplotlib(front_crop, front, stride=1)
 
+    # save stl
     p2v.save2stl(front, 'out.stl')
     
     
